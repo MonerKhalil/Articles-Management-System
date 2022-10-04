@@ -39,7 +39,7 @@ class ProfileController extends Controller
                 "first_name" => ["nullable","string"],
                 "last_name" => ["nullable","string"],
                 "path_photo" => ["nullable",'mimes:jpeg,png,jpg'],
-                "phone" => ["nullable","min:10","numeric"],
+                "phone" => ["nullable","digits:10","numeric"],
                 "setting_lang" => ["nullable","string",Rule::in(["en","ar"])]
             ],Application::getApp()->getErrorMessages());
             if (!$request->hasAny([

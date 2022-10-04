@@ -8,6 +8,7 @@ use App\Mail\UserMail;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
@@ -16,14 +17,10 @@ use PHPUnit\Exception;
 
 class TestController extends Controller
 {
-    public function Test(Request $request){
-        if ( Application::getApp()->isOnlineInternet()){
-            $user = User::first();
-            $data = str_split("637635");
-            Mail::to("monerkhalil90@gmail.com")->send(new SendCodeMail($user,$data));
-            return "Email Sent";
-        }
-        return "not connect";
+    public function Test(Request $request)
+    {
+//        Http::get("http://localhost:4200/Authentication/SignIn")
+        return redirect("http://localhost:4200/Authentication/SignIn");
 //        dd($request);
 //        $valide = Validator::make($request->all(),[
 //
@@ -49,6 +46,5 @@ class TestController extends Controller
 //        }catch (Exception $exception){
 ////            DB::rollBack();
 //        }
-
     }
 }

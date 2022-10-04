@@ -23,7 +23,7 @@ return [
     "newpassword.required" => "The new password input is required",
     "newpassword.string" => "The new password input is not string",
     "newpassword.min" => "The password input is min 8 chars",
-    "phone.min" => "The phone input is min 10 numbers",
+    "phone.digits" => "The phone input is not 10 numbers",
     "phone.numeric" => "The phone input is not numeric",
     "phone.in" => "The phone input is not true || 1",
     "role.string" => "The role input is not string",
