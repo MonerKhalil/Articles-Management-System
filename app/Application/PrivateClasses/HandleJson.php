@@ -13,9 +13,9 @@ class HandleJson
      */
     public function NumberOfValues(Request $request): int
     {
-        return ($request->has("num_values") &&
-            is_numeric($request->num_values) && $request->num_values>0)
-            ? $request->num_values : 10;
+        return ($request->has("num_items") &&
+            is_numeric($request->num_items) && $request->num_items>0)
+            ? $request->num_items : 10;
     }
 
     /**

@@ -9,5 +9,6 @@ Route::controller(ProfileController::class)
         Route::put("edit","Update");//
         Route::put("edit/password","UpdatePassword");//
         Route::put("edit/email","SendCodeUpdateEmail");//2
+        Route::delete("clear","ClearPhonePhoto");
         Route::delete("destroy","Delete");//
 });

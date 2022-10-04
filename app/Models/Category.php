@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
@@ -14,33 +15,28 @@ class Category extends Model
     protected $table = "categories";
 
     protected $fillable = [
-        "id_parent","name","slug","name_en","slug_en"
+        "id_parent","name","name_en"
         ,"description","description_en","path_photo"
     ];
 
-    protected $hidden = [
-        "slug","slug_en"
-    ];
-
-
     /**
      * All Parents Categories
+     * @return BelongsTo
+     */
+    public function ParentsCategories(): BelongsTo
+    {
+        return $this->belongsTo(Category::class,"id_parent","id");
+
+    }
+    /**
+     * All Childes Categories
      * @return HasMany
      */
-    public function ParentsCategories(): HasMany
+    public function ChildesCategories(): HasMany
     {
         return $this->hasMany(Category::class,"id_parent","id");
     }
 
-    /**
-     *  All  Childes Categories belonging to this Category Parent
-     * @param $id_parent
-     * @return mixed
-     */
-    public function ChildesCategory($id_parent): mixed
-    {
-        return Category::where("id_parent",$id_parent)->get();
-    }
 
     /**
      * All tasks for the category

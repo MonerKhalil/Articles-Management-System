@@ -36,9 +36,10 @@ class CategorySeeder extends Seeder
      */
     public function run()
     {
-        for ($i = 0 ; $i < 5 ; $i++){
+        for ($i = 0 ; $i < 20 ; $i++){
             $num = random_int(0,6);
             Category::create([
+                "id_parent" => random_int(1,5),
                 "name" => $this->name_des_ar()[$num],
                 "name_en" => $this->name_des_en()[$num],
                 "description" => $this->des_ar(),

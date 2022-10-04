@@ -38,11 +38,16 @@ class ProfileController extends Controller
             $validate = Validator::make($request->all(),[
                 "first_name" => ["nullable","string"],
                 "last_name" => ["nullable","string"],
-                "email" => ["nullable","string","email",Rule::unique("users","email")],
                 "path_photo" => ["nullable",'mimes:jpeg,png,jpg'],
-                "phone" => ["nullable","min:10","string"],
+                "phone" => ["nullable","min:10","numeric"],
                 "setting_lang" => ["nullable","string",Rule::in(["en","ar"])]
             ],Application::getApp()->getErrorMessages());
+            if (!$request->hasAny([
+                "first_name","last_name","path_photo","setting_lang","phone"
+                ])){
+                return Application::getApp()->getHandleJson()
+                    ->DataHandle(Application::getApp()->getErrorMessages()["data.empty"],"message");
+            }
             if($validate->fails()){
                 return Application::getApp()->getHandleJson()
                     ->ErrorsHandle("validate",$validate->errors());
@@ -134,6 +139,44 @@ class ProfileController extends Controller
                 return Application::getApp()->getHandleJson()
                     ->ErrorsHandle("validate",["password" => [Application::getApp()->getErrorMessages()["password.err"]]]);
             }
+        }catch (\Exception $exception){
+            DB::rollBack();
+            return Application::getApp()->getHandleJson()
+                ->ErrorsHandle("exception",$exception->getMessage());
+        }
+    }
+
+    public function ClearPhonePhoto(Request $request): JsonResponse
+    {
+        try {
+            $validate = Validator::make($request->all(),[
+                "phone" => ["nullable",Rule::in([true,"1"])],
+                "path_photo" => ["nullable",Rule::in(true,"1")]
+            ],Application::getApp()->getErrorMessages());
+            if($validate->fails()){
+                return Application::getApp()->getHandleJson()
+                    ->ErrorsHandle("validate",$validate->errors());
+            }
+            if (!$request->hasAny(["phone","path_photo"])){
+                return Application::getApp()->getHandleJson()
+                    ->ErrorsHandle("date-empty",Application::getApp()->getErrorMessages()["data.empty"]);
+            }
+            $user = auth()->user();
+            $old_photo = $user->path_photo;
+            $photo = null;
+            if ($request->path_photo==true){
+                $photo = $old_photo;
+            }
+            DB::beginTransaction();
+            $user->update([
+                "phone" => $request->phone ? null : $user->phone,
+                "path_photo" => !is_null($photo) ?
+                    Application::getApp()->getUploadFiles()->DefaultPhotoPath() : $user->path_photo
+            ]);
+            DB::commit();
+            if(!is_null($photo)) {Application::getApp()->getUploadFiles()->DeleteFile($photo);}
+            return Application::getApp()->getHandleJson()
+                ->DataHandle(Application::getApp()->getErrorMessages()["data.clear"],"message");
         }catch (\Exception $exception){
             DB::rollBack();
             return Application::getApp()->getHandleJson()

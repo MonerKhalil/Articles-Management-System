@@ -2,14 +2,13 @@
 
 namespace App\Application;
 
+use App\Application\DB\OrderByData;
 use App\Application\PrivateClasses\HandleJson;
 use App\Application\PrivateClasses\UploadFiles;
-use Illuminate\Http\Request;
-
 
 class Application
 {
-    private $urlFront;
+    use OrderByData;
     private static $app;
     private $handleJson;
     private $uploadFiles;
