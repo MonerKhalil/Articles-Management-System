@@ -22,10 +22,11 @@ trait OrderByData
         }
         return $order;
     }
+
     private function TypeOrder(): array
     {
         return [
-            "id","name"
+            "id","name","children"
         ];
     }
 }

@@ -6,6 +6,7 @@ use App\Application\Application;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Throwable;
 
 class Handler extends ExceptionHandler
@@ -16,7 +17,7 @@ class Handler extends ExceptionHandler
      * @var array<int, class-string<Throwable>>
      */
     protected $dontReport = [
-        //
+        NotFoundHttpException::class
     ];
 
     /**
@@ -37,8 +38,11 @@ class Handler extends ExceptionHandler
      */
     public function register()
     {
-        $this->reportable(function (Throwable $e) {
-            //
+        $this->renderable(function (NotFoundHttpException $e, $request) {
+            if ($request->is('/*')) {
+                return Application::getApp()->getHandleJson()
+                    ->ErrorsHandle("exception",$e->getMessage());
+            }
         });
     }
     protected function unauthenticated($request, AuthenticationException $exception)

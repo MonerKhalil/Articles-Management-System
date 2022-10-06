@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Application\Application;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Str;
@@ -24,6 +25,8 @@ class UserSeeder extends Seeder
                 "slug_name" => Str::slug($first_name.$last_name),
                 "email" => $first_name.$last_name."@"."gmail.com",
                 "password" => "12345678",
+                "path_photo" => Application::getApp()->getUploadFiles()->DefaultPhotoPath(),
+                "role" => "writer"
             ]);
         }
     }

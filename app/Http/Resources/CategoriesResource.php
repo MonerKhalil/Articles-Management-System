@@ -21,6 +21,8 @@ class CategoriesResource extends JsonResource
             "name" => Application::getApp()->getLang()==="ar" ? $this->name : $this->name_en,
             "description" => Application::getApp()->getLang()==="ar" ? $this->description : $this->description_en,
             "path_photo" => $this->path_photo,
+            "children" => $this->children,
+            "articles" => $this->articles,
             "created_at" => $this->created_at,
             "updated_at" => $this->updated_at
         ];
