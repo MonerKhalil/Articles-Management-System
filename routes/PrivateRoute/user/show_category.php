@@ -6,9 +6,6 @@ use Illuminate\Support\Facades\Route;
 
 Route::controller(ShowCategoriesController::class)->prefix("category")
     ->group(function (){
-        Route::prefix("show")->group(function (){
-            Route::get("","ShowCategory");
-            Route::get("child","ShowChildCategory");
-            Route::get("all","ShowAllCategories");
-        });
+        Route::get("show","ShowCategory");
+        Route::get("search","SearchCategories");
 });

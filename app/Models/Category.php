@@ -2,11 +2,14 @@
 
 namespace App\Models;
 
+use App\Application\Application;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class Category extends Model
 {
@@ -74,5 +77,20 @@ class Category extends Model
         );
     }
 
+    /**
+     * @param Request $request
+     * @param false $order
+     * @return mixed
+     */
+    public static function queryCategoriesCountChildAndArticle(Request $request, bool $order = false): mixed
+    {
+        $order = Application::getApp()->OrderByData($request);
+        $query = Category::select(DB::raw("categories_Child.* ,COUNT(articles_categories.id_article) as articles"))
+            ->from(DB::raw("(SELECT parent.* ,COUNT(child.id_parent) AS children FROM categories as parent LEFT JOIN categories as child ON child.id_parent = parent.id GROUP BY parent.id) as categories_Child"))
+            ->leftJoin("articles_categories","categories_Child.id","=","articles_categories.id_category")
+            ->groupBy(["categories_Child.id"]);
+        return $order ? $query->orderBy($order->type,$order->latest) : $query;
+
+    }
 
 }
