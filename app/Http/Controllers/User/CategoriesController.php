@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 
-class ShowCategoriesController extends Controller
+class CategoriesController extends Controller
 {
     public function ShowCategory(Request $request): JsonResponse
     {

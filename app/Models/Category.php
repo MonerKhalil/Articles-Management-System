@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Application\Application;
+use App\Application\DB\OrderByData;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -23,10 +24,10 @@ class Category extends Model
     ];
 
     /**
-     * All Parents Categories
+     *
      * @return BelongsTo
      */
-    public function ParentsCategories(): BelongsTo
+    public function ParentCategories(): BelongsTo
     {
         return $this->belongsTo(Category::class,"id_parent","id");
 
@@ -35,7 +36,7 @@ class Category extends Model
      * All Childes Categories
      * @return HasMany
      */
-    public function ChildesCategories(): HasMany
+    public function ChildrenCategories(): HasMany
     {
         return $this->hasMany(Category::class,"id_parent","id");
     }
@@ -90,7 +91,5 @@ class Category extends Model
             ->leftJoin("articles_categories","categories_Child.id","=","articles_categories.id_category")
             ->groupBy(["categories_Child.id"]);
         return $order ? $query->orderBy($order->type,$order->latest) : $query;
-
     }
-
 }

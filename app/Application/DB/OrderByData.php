@@ -26,7 +26,7 @@ trait OrderByData
     private function TypeOrder(): array
     {
         return [
-            "id","name","children"
+            "id","name"
         ];
     }
 }

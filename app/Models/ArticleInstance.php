@@ -14,7 +14,7 @@ class ArticleInstance extends Model
     protected $primaryKey = "id_article";
 
     protected $fillable = [
-        "id_article","title","description","path_photo"
+        "id_article","name","description","path_photo"
     ];
     public function Article(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {

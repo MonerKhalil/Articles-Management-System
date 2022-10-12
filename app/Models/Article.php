@@ -2,11 +2,17 @@
 
 namespace App\Models;
 
+use App\Application\Application;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use \Illuminate\Database\Eloquent\Relations\HasMany;
 use \Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use \Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Query\Builder;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+
 
 class Article extends Model
 {
@@ -18,6 +24,7 @@ class Article extends Model
         "id_parent","id_writer","lang","views"
     ];
 
+    protected $hidden = ["pivot"];
 
     public function ArticleAccept(): HasOne
     {
@@ -36,24 +43,21 @@ class Article extends Model
 
 
     /**
-     * All Parents Articles
+     *
      * @return HasMany
      */
-    public function ParentsArticle(): HasMany
+    public function ChildrenArticle(): HasMany
     {
         return $this->hasMany(Article::class,"id_parent","id");
     }
 
     /**
-     *  All  Childes Articles belonging to this Article Parent
-     * @param $id_parent
-     * @return mixed
+     * @return BelongsTo
      */
-    public function ChildesArticle($id_parent): mixed
+    public function ParentArticle(): BelongsTo
     {
-        return Article::where("id_parent",$id_parent)->get();
+        return $this->belongsTo(Article::class,"id_parent","id");
     }
-
     /**
      * All Article comments
      *
@@ -101,4 +105,57 @@ class Article extends Model
         return View::where("id_article",$this->id)->count();
     }
 
+
+    /**
+     *
+     *
+     * @param Request $request
+     * @param bool $order
+     * @return mixed
+     */
+    public static function queryArticleCategory(Request $request,bool $order = false,int $id_article = null): mixed
+    {
+        $order = Application::getApp()->OrderByData($request);
+        $query = Article::select(DB::raw("c_articles.*,COUNT(comments.id) as comments"))
+            ->from(function ($query) use ($request,$id_article){
+               $temp = $query->select(DB::raw("articles.id,articles.id_parent,articles.id_writer,articles_publish.name,articles_publish.description, articles_publish.path_photo,articles_publish.created_at,articles_publish.updated_at,articles.views,COUNT(child.id_parent) as children"))
+                    ->from("articles")
+                    ->join("articles_publish","articles_publish.id_article","=","articles.id")
+                    ->leftJoin("articles as child","child.id_parent","=","articles.id");
+                   if (!is_null($id_article)){
+                       return $temp->where("articles.id",$id_article)->groupBy(["articles.id"]);
+                   }
+                   if($request->has("id_article")){
+                       $temp->where("articles.id_parent",$request->id_article);
+                   }
+                   if($request->has("id_category")){
+                       $temp->join("articles_categories","articles.id","=","articles_categories.id_article")
+                            ->whereIn("articles_categories.id_category",$request->id_category);
+                   }
+                   if($request->has("name")){
+                       $temp->where("articles_publish.name",$request->name);
+                   }
+                   return $temp->groupBy(["articles.id"]);
+            },"c_articles")
+            ->leftJoin("comments","comments.id_article","=","c_articles.id")
+            ->groupBy(["c_articles.id"]);
+        return $order ? $query->orderBy($order->type,$order->latest) : $query;
+    }
 }
+/*
+ *
+SELECT c_articles.*,COUNT(comments.id) as comments
+FROM (SELECT articles.id,articles.id_parent,articles.id_writer,articles.views,
+      articles_publish.title,articles_publish.description,
+      articles_publish.path_photo,articles_publish.created_at,articles_publish.updated_at
+      ,COUNT(child.id_parent) as children
+      FROM articles
+      JOIN articles_categories ON articles.id = articles_categories.id_article
+      JOIN articles_publish ON articles_publish.id_article = articles.id
+	  LEFT JOIN articles as child ON child.id_parent = articles.id
+      WHERE articles_categories.id_category IN (1)
+      GROUP BY articles.id
+     ) as c_articles
+LEFT JOIN comments ON comments.id_article = c_articles.id
+GROUP BY c_articles.id
+*/
