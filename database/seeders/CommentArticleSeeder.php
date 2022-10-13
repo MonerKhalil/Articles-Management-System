@@ -15,10 +15,10 @@ class CommentArticleSeeder extends Seeder
      */
     public function run()
     {
-        for ($i = 2 ; $i < 12 ; $i++){
+        for ($i = 1 ; $i < 15 ; $i++){
             Comment::create([
                 "id_user" => $i,
-                "id_article" => 1,
+                "id_article" => 10,
                 "comment" => Str::random(50)
             ]);
         }

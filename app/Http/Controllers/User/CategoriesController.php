@@ -37,25 +37,16 @@ class CategoriesController extends Controller
     {
         try {
             $validate = Validator::make($request->all(),[
-                "id_category" => ["nullable","numeric",Rule::exists("categories","id")],
+                "id_category" => ["nullable","numeric"],
                 "name" => ["nullable","string"]
             ],Application::getApp()->getErrorMessages());
             if($validate->fails()){
                 return Application::getApp()->getHandleJson()->ErrorsHandle("validate",$validate->errors());
             }
-            $categories = Category::queryCategoriesCountChildAndArticle($request,true);
-            if(!is_null($request->id_category)){
-                $categories = $categories->where("categories_Child.id_parent",$request->id_category);
-            }
-            if(!is_null($request->name)){
-                $categories = $categories->where(function ($query) use ($request){
-                    $query->where("categories_Child.name","like",'%'.$request->name.'%')
-                        ->orwhere("categories_Child.name_en","like",'%'.$request->name.'%');
-                });
-            }
-            $finalData = $categories->paginate(Application::getApp()->getHandleJson()->NumberOfValues($request));
+            $categories = Category::queryCategoriesCountChildAndArticle($request,true)
+                ->paginate(Application::getApp()->getHandleJson()->NumberOfValues($request));
             return Application::getApp()->getHandleJson()
-                ->PaginateHandle("categories",CategoriesResource::collection($finalData));
+                ->PaginateHandle("categories",CategoriesResource::collection($categories));
         }catch (\Exception $exception){
             return Application::getApp()->getHandleJson()
                 ->ErrorsHandle("exception",$exception->getMessage());

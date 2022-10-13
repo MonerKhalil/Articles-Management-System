@@ -21,7 +21,7 @@ class Article extends Model
     protected $table = "articles";
 
     protected $fillable = [
-        "id_parent","id_writer","lang","views"
+        "id_writer","lang","views"
     ];
 
     protected $hidden = ["pivot"];
@@ -97,6 +97,16 @@ class Article extends Model
         );
     }
 
+    public function visitor()
+    {
+        return $this->belongsToMany(Visitor::class,
+            "views",
+            "id_article",
+            "id_visitor",
+            "id","id"
+        );
+    }
+
     /**
      * Count Views in Article
      * @return int
@@ -107,35 +117,32 @@ class Article extends Model
 
 
     /**
-     *
+     *  get Article(id) or Articles( Selling to a group of categories ) or All Articles
+     *  with count Comments
      *
      * @param Request $request
      * @param bool $order
      * @return mixed
      */
-    public static function queryArticleCategory(Request $request,bool $order = false,int $id_article = null): mixed
+    public static function queryArticleCategory(Request $request,bool $order = false): mixed
     {
         $order = Application::getApp()->OrderByData($request);
         $query = Article::select(DB::raw("c_articles.*,COUNT(comments.id) as comments"))
-            ->from(function ($query) use ($request,$id_article){
-               $temp = $query->select(DB::raw("articles.id,articles.id_parent,articles.id_writer,articles_publish.name,articles_publish.description, articles_publish.path_photo,articles_publish.created_at,articles_publish.updated_at,articles.views,COUNT(child.id_parent) as children"))
+            ->from(function ($query) use ($request){
+               $temp = $query->select(DB::raw("articles.id,articles.id_writer,articles_publish.name,articles_publish.description, articles_publish.path_photo,articles_publish.created_at,articles_publish.updated_at,articles.views"))
                     ->from("articles")
-                    ->join("articles_publish","articles_publish.id_article","=","articles.id")
-                    ->leftJoin("articles as child","child.id_parent","=","articles.id");
-                   if (!is_null($id_article)){
-                       return $temp->where("articles.id",$id_article)->groupBy(["articles.id"]);
-                   }
+                    ->join("articles_publish","articles_publish.id_article","=","articles.id");
                    if($request->has("id_article")){
-                       $temp->where("articles.id_parent",$request->id_article);
+                       $temp->where("articles.id",$request->id_article);
                    }
                    if($request->has("id_category")){
                        $temp->join("articles_categories","articles.id","=","articles_categories.id_article")
                             ->whereIn("articles_categories.id_category",$request->id_category);
                    }
                    if($request->has("name")){
-                       $temp->where("articles_publish.name",$request->name);
+                       $temp->where("articles_publish.name","like",'%'.$request->name.'%');
                    }
-                   return $temp->groupBy(["articles.id"]);
+                   return $temp;
             },"c_articles")
             ->leftJoin("comments","comments.id_article","=","c_articles.id")
             ->groupBy(["c_articles.id"]);

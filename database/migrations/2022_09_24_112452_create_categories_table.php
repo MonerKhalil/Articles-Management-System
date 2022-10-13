@@ -16,8 +16,8 @@ class CreateCategoriesTable extends Migration
         Schema::create('categories', function (Blueprint $table) {
             $table->id();
             $table->foreignId("id_parent")->nullable()->constrained("categories","id")->nullOnDelete();
-            $table->string("name");
-            $table->string("name_en");
+            $table->string("name")->unique();
+            $table->string("name_en")->unique();
             $table->text("description");
             $table->text("description_en");
             $table->text("path_photo");

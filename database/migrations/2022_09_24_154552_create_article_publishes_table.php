@@ -16,7 +16,7 @@ class CreateArticlePublishesTable extends Migration
         Schema::create('articles_publish', function (Blueprint $table) {
             $table->id("id_article");
             $table->foreign("id_article")->references("id")->on("articles")->cascadeOnDelete();
-            $table->string("name");
+            $table->string("name")->unique();
             $table->text("description");
             $table->text("path_photo")->nullable();
             $table->timestamps();

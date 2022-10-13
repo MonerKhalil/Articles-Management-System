@@ -16,7 +16,7 @@ class CreateContentChangesTable extends Migration
         Schema::create('contents_changes', function (Blueprint $table) {
             $table->id();
             $table->foreignId("id_article")->constrained("articles","id")->cascadeOnDelete();
-            $table->enum("type",["text","image","video"])->default("text");
+            $table->enum("type",["title","text","image","video"])->default("text");
             $table->text("value");
             $table->timestamps();
         });

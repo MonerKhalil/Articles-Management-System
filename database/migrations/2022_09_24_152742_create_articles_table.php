@@ -15,7 +15,6 @@ class CreateArticlesTable extends Migration
     {
         Schema::create('articles', function (Blueprint $table) {
             $table->id();
-            $table->foreignId("id_parent")->nullable()->constrained("articles","id")->nullOnDelete();
             $table->foreignId("id_writer")->nullable()->constrained("users","id")->nullOnDelete();
             $table->enum("lang",["en","ar"])->default("ar");
             $table->unsignedBigInteger("views")->default(0);

@@ -20,28 +20,28 @@ class ArticlesSeeder extends Seeder
     public function run()
     {
         #Article
-//        for($i = 0 ; $i < 10 ; $i++){
+//        for($i = 1 ; $i <= 40 ; $i++){
 //            Article::create([
-//                "id_parent" => random_int(1,10),
-//                "id_writer" => random_int(2,11)
+//                "id_writer" => random_int(1,10),
+//                "lang" => "en"
 //            ]);
 //        }
-//      #Article_Category
-//        for ($i = 0 ; $i < 10 ; $i++){
-//            Article_Category::create([
-//                "id_category" => random_int(1,25),
-//                "id_article" => random_int(1,20)
-//            ]);
-//        }
-      #Article_Category
-//        for ($i = 1 ; $i <= 20 ; $i++){
-//            ArticlePublish::create([
-//                "id_article" => $i,
-//                "title" =>  Str::random(10),
-//                "description" => Str::random(100),
-//                "path_photo" => Application::getApp()->getUploadFiles()->DefaultPhotoPath()
-//            ]);
-//        }
+       #Article_Category
+        for ($i = 1 ; $i <= 10 ; $i++){
+            Article_Category::create([
+                "id_category" => random_int(1,21),
+                "id_article" => random_int(1,40)
+            ]);
+        }
+        #Article_Category
+        for ($i = 1 ; $i <= 40 ; $i++){
+            ArticlePublish::create([
+                "id_article" => $i,
+                "name" =>  Str::random(20),
+                "description" => Str::random(100),
+                "path_photo" => Application::getApp()->getUploadFiles()->DefaultPhotoPath()
+            ]);
+        }
 
     }
 }

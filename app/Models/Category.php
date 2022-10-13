@@ -86,10 +86,25 @@ class Category extends Model
     public static function queryCategoriesCountChildAndArticle(Request $request, bool $order = false): mixed
     {
         $order = Application::getApp()->OrderByData($request);
-        $query = Category::select(DB::raw("categories_Child.* ,COUNT(articles_categories.id_article) as articles"))
-            ->from(DB::raw("(SELECT parent.* ,COUNT(child.id_parent) AS children FROM categories as parent LEFT JOIN categories as child ON child.id_parent = parent.id GROUP BY parent.id) as categories_Child"))
-            ->leftJoin("articles_categories","categories_Child.id","=","articles_categories.id_category")
-            ->groupBy(["categories_Child.id"]);
+        $query = Category::select(DB::raw("categories_final.* ,COUNT(articles_categories.id_article) as articles"))
+            ->from(function ($q) use ($request){
+                $temp = $q->select(DB::raw("parent.* ,COUNT(child.id_parent) AS children"))
+                    ->from("categories","parent");
+                if($request->has("id_category")){
+                    $temp->where("parent.id_parent",$request->id_category!=0 ? $request->id_category : null);
+                }
+                if($request->has("name")){
+                    $temp->where(function ($query) use ($request){
+                        $query->where("parent.name","like",'%'.$request->name.'%')
+                            ->orwhere("parent.name_en","like",'%'.$request->name.'%');
+                    });
+                }
+                return $temp->leftJoin("categories as child","child.id_parent","=","parent.id")
+                            ->groupBy(["parent.id"]);
+
+            },"categories_final")
+            ->leftJoin("articles_categories","categories_final.id","=","articles_categories.id_category")
+            ->groupBy(["categories_final.id"]);
         return $order ? $query->orderBy($order->type,$order->latest) : $query;
     }
 }

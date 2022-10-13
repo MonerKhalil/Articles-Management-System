@@ -14,16 +14,19 @@ class ArticleContentSeeder extends Seeder
      * Run the database seeds.
      *
      * @return void
+     * @throws \Exception
      */
     public function run()
     {
+        $type = ["text","title"];
         #change
-//        for ($i = 0;$i<20;$i++){
-//            ContentChange::create([
-//               "id_article" => 1,
-//               "value" => Str::random(50)
-//            ]);
-//        }
+        for ($i = 1;$i<=20;$i++){
+            ContentChange::create([
+               "id_article" => 1,
+               "type" => $type[random_int(0,1)],
+               "value" => Str::random(50)
+            ]);
+        }
         #save
         for ($i = 1;$i<=20;$i++){
             ContentSave::create([
