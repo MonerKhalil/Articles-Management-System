@@ -19,17 +19,14 @@ class multiAuth
     {
         try {
             $user = auth("user")->user();
-            if(in_array($user->role,explode('|', $Auth)))
-                return $next($request);
-            else{
-                if(Application::getApp()->getLang() ==="ar"){
-                    throw new \Exception(".لا تمتلك صلاحية لهذه العملية");
-                }else {
-                     throw new \Exception("You do not have permission for this operation.");
-                }
+            if(!is_null($user)){
+                if(in_array($user->role,explode('|', $Auth)))
+                    return $next($request);
             }
+            return Application::getApp()->getHandleJson()->ErrorsHandle("access",
+                Application::getApp()->getErrorMessages()["access"]);
         }catch (\Exception $exception){
-            return Application::getApp()->getHandleJson()->ErrorsHandle("access",$exception->getMessage());
+            return Application::getApp()->getHandleJson()->ErrorsHandle("exception",$exception->getMessage());
         }
     }
 }

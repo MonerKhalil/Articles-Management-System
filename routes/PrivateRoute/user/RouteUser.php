@@ -9,3 +9,5 @@ require __DIR__ . "/show_category.php";
 require __DIR__ . "/show_article.php";
 
 require __DIR__ . "/comments_replies.php";
+
+require __DIR__ . "/favorite.php";

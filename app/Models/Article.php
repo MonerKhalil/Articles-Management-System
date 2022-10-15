@@ -115,6 +115,12 @@ class Article extends Model
         return View::where("id_article",$this->id)->count();
     }
 
+    public function CheckArticleisFavoriteUser(int $id_user):bool{
+        return Favorite::where("id_user",$id_user)
+            ->where("id_article",$this->id)
+            ->exists();
+    }
+
 
     /**
      *  get Article(id) or Articles( Selling to a group of categories ) or All Articles

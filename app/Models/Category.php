@@ -78,25 +78,32 @@ class Category extends Model
         );
     }
 
+
     /**
+     * Search (name) in all categories or child category
+     * or
+     * get query all categories
+     *
      * @param Request $request
-     * @param false $order
+     * @param int|null $id_category
+     * @param string|null $name
+     * @param bool $order
      * @return mixed
      */
-    public static function queryCategoriesCountChildAndArticle(Request $request, bool $order = false): mixed
+    public static function queryCategoriesCountChildAndArticle(Request $request, int $id_category=null, string $name =null , bool $order = false): mixed
     {
-        $order = Application::getApp()->OrderByData($request);
+        $orderBy = Application::getApp()->OrderByData($request);
         $query = Category::select(DB::raw("categories_final.* ,COUNT(articles_categories.id_article) as articles"))
-            ->from(function ($q) use ($request){
+            ->from(function ($q) use ($id_category,$name){
                 $temp = $q->select(DB::raw("parent.* ,COUNT(child.id_parent) AS children"))
                     ->from("categories","parent");
-                if($request->has("id_category")){
-                    $temp->where("parent.id_parent",$request->id_category!=0 ? $request->id_category : null);
+                if(!is_null($id_category)){
+                    $temp->where("parent.id_parent",$id_category!=0 ? $id_category : null);
                 }
-                if($request->has("name")){
-                    $temp->where(function ($query) use ($request){
-                        $query->where("parent.name","like",'%'.$request->name.'%')
-                            ->orwhere("parent.name_en","like",'%'.$request->name.'%');
+                if(!is_null($name)){
+                    $temp->where(function ($query) use ($name){
+                        $query->where("parent.name","like",'%'.$name.'%')
+                            ->orwhere("parent.name_en","like",'%'.$name.'%');
                     });
                 }
                 return $temp->leftJoin("categories as child","child.id_parent","=","parent.id")
@@ -105,6 +112,12 @@ class Category extends Model
             },"categories_final")
             ->leftJoin("articles_categories","categories_final.id","=","articles_categories.id_category")
             ->groupBy(["categories_final.id"]);
-        return $order ? $query->orderBy($order->type,$order->latest) : $query;
+        if($order){
+            if ($orderBy->type==="name"){
+                $orderBy->type = Application::getApp()->getLang()==="ar" ? "name" : "name_en";
+            }
+            return $query->orderBy($orderBy->type,$orderBy->latest);
+        }
+        return $query;
     }
 }

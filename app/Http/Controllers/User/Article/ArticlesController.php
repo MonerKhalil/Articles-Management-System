@@ -6,6 +6,7 @@ use App\Application\Application;
 use App\Http\Controllers\Controller;
 use App\Models\Article;
 use App\Models\Content;
+use App\Models\View;
 use App\Models\Visitor;
 use Exception;
 use Illuminate\Http\JsonResponse;
@@ -46,18 +47,32 @@ class ArticlesController extends Controller
                 return Application::getApp()->getHandleJson()->ErrorsHandle("validate",$validate->errors());
             }
             $article = Article::queryArticleCategory($request,false)->first();
-            if(!Visitor::where("ip_client",$request->getClientIp())->exists()){
-                DB::beginTransaction();
+            $Vexists = Visitor::where("ip_client",$request->getClientIp())->first();
+            DB::beginTransaction();
+            if(is_null($Vexists)){
                 $visitor = Visitor::create([
                     "ip_client" => $request->getClientIp()
                 ]);
-                $visitor->article()->syncWithoutDetaching([
+                $visitor->article()->attach([
                     "id_article" => $article->id
                 ]);
                 $article->update([
                     "views" => $article->CountViews()
                 ]);
-                DB::commit();
+            }else{
+                if (!View::where("id_article",$article->id)->where("id_visitor",$Vexists->id)->exists()){
+                    $Vexists->article()->attach([
+                        "id_article" => $article->id
+                    ]);
+                    $article->update([
+                        "views" => $article->CountViews()
+                    ]);
+                }
+            }
+            DB::commit();
+            $user = auth("user")->user();
+            if (!is_null($user)&&$user->role === "user"){
+                $article->favorite = $article->CheckArticleisFavoriteUser($user->id);
             }
             $article->contents = Content::select(DB::raw("contents_changes.id,contents_changes.type,contents_changes.value"))
                 ->join("contents_saves","contents_saves.id","=","contents.id_content_save")

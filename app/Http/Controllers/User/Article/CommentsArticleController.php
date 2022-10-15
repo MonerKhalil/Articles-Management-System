@@ -3,13 +3,16 @@
 namespace App\Http\Controllers\User\Article;
 
 use App\Application\Application;
+use App\Events\CommentEvent;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\CommentResource;
 use App\Http\Resources\ReplyCommentResource;
 use App\Models\Comment;
 use App\Models\Reply;
+use BeyondCode\LaravelWebSockets\WebSockets\Exceptions\WebSocketException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 
@@ -17,6 +20,35 @@ class CommentsArticleController extends Controller
 {
     public function __construct()
     {
+        $this->middleware(["auth:user"])->only("AddComment");
+    }
+
+    public function AddComment(Request $request): JsonResponse
+    {
+        try {
+            $validate = Validator::make($request->all(),[
+                "id_article" => ["required","numeric",Rule::exists("articles_publish","id_article")],
+                "comment" => ["required","string"],
+            ],Application::getApp()->getErrorMessages());
+            if($validate->fails()){
+                return Application::getApp()->getHandleJson()->ErrorsHandle("validate",$validate->errors());
+            }
+            $user = auth()->user();
+            $comment = Comment::create([
+                "id_user" => $user->id,
+                "id_article" => $request->id_article,
+                "comment" => $request->comment
+            ]);
+            $comment->user_role = $user->role;
+            if (Application::getApp()->isOnlineInternet()){
+                Artisan::call("php artisan websockets:serve");
+                broadcast(new CommentEvent($request->id_article,$user,$comment));
+            }
+            return Application::getApp()->getHandleJson()->DataHandle($comment,"comment");
+        }catch (\Exception $exception){
+            return Application::getApp()->getHandleJson()
+                ->ErrorsHandle("exception",$exception->getMessage());
+        }
     }
 
     public function ShowCommentsArticle(Request $request): JsonResponse
